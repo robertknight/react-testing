@@ -24,7 +24,7 @@ components.
    React components in tests.
 
 ## Recommended Reading & Videos
- * TODO: Facebook high-perf components
- * TODO: Property testing with React
- * TODO: React TDD
- * TODO: 'the Node way - how require() works'
+ * Separating visual and data-fetching components
+  * [React.js Conf 2015 - Making your app fast with high-performance components](https://www.youtube.com/watch?v=KYzlpRvWZ6c). This talk introduces a policy of separating pure visual components from containers which contain data fetching logic.
+ * Beyond unit testing
+  * [Dave McCabe - Property Testing for React](https://vimeo.com/122070164). This is a great talk on how to do property testing, where tests are fed a stream of random but repeatable and plausible inputs, and the testing framework checks that various invariants that you specify hold for all inputs.

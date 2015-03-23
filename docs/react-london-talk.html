@@ -25,18 +25,319 @@ class: center, middle
 
 ---
 
-# Agenda
+# UI Testing
 
-1. Introduction
-2. Deep-dive
-3. ...
+* Traditionally painful, brittle
+* Required a lot of infrastructure - browser
+
+???
+
+React is like a virtual machine which isolates us from
+
+First I'm going to go briefly over the basic of testing
+a React app and how to run tests both in node and the browser.
+
+Then I'll look at different ways to isolate pieces of the
+app in testing to make debugging easier
 
 ---
 
-# Introduction
+# React TestUtils
+
+```
+React.addons.TestUtils.renderIntoDocument(component)
+                      .scryRenderedDOMComponentsWithClass(component)
+					  .findRenderedDOMComponentWithTag()
+```
+
+```
+React.addons.TestUtils.Simulate.click(component, event)
+                               .mouseDown(component, event)
+```
+
+
+???
+
+React ships with a utility library called TestUtils that lets
+us render a component into a detached DOM element, get access to
+the component's DOM nodes and simulate events on them.
+
+This is fine for simple components, we render a component with
+a set of props and state, and make assertions on the DOM markup.
+
 
 ---
 
+```js
+describe('TweetItem', () => {
+	it('should display item details', () => {
+		const tweet = TEST_TWEET;
+		const item = React.addons.TestUtils.renderIntoDocument(
+			<TweetItem tweet={tweet}/>
+		);
+
+		const userIcon = React.findDOMNode(item.refs.userIcon);
+		const userDescription = React.findDOMNode(item.refs.userDescription);
+		const userScreenName = React.findDOMNode(item.refs.userScreenName);
+		const date = React.findDOMNode(item.refs.date);
+		const text = React.findDOMNode(item.refs.text);
+
+		expect(userDescription.textContent).to.equal(tweet.user.description);
+		expect(userScreenName.textContent).to.equal('@' + tweet.user.screenName);
+		expect(date.textContent).to.include('3m');
+		expect(text.textContent).to.equal(tweet.text);
+	});
+});
+```
+
+???
+
+A basic test for a React component consists of rendering it either into
+a detached DOM element or a container element on the page, then getting
+a reference to the rendered DOM nodes, checking their visual structure
+and using the Simulate functions to simulate user input and checking
+that they respond as we expect.
+
+---
+
+# jsdom
+
+ * Fake DOM environment that runs in Node
+ * Good Enough™ for a lot of testing
+
+```js
+// setup.js - setup the fake DOM
+jsdom.env({
+	html: '<body><div id="app"></div></body>',
+	done: (errors, window) => {
+		global.document = window.document;
+		global.window = window;
+		global.navigator = window.navigator;
+	}
+});
+
+// run our tests
+mocha --require setup.js <test files>
+```
+
+???
+
+This works fine in a browser, but browsers add complexity and performance
+overhead to the testing environment.
+
+Most React components don't actually need a full fidelity environment to work
+in though. jsdom provides an implementation of the DOM that is good enough for
+testing most components.
+
+When React loads, it inspects its execution environment and checks whether the
+DOM is available. This means that we need to set up jsdom _before_ requiring React.
+
+Facebook's Jest testing tool ships with jsdom and does this for you, but it is
+quite easy to integrate with other frameworks.
+
+jsdom is great, but the DOM is big and complex so its useful to be able to run
+tests in the browser as well.
+
+For running the tests in the browser, you can take the same
+code and use your favorite module bundler such as Webpack or Browserify.
+The only difference is that you don't load the fake DOM environment.
+
+[Demo - Mocha tests on the command-line and
+ in the browser]
+
+[Reference to Github repo]
+
+# 
+
+???
+
+This gives us the basics for running a UI test on the command line and
+the browser, but we're not really taking advantage of the way React.
+
+# Think in Components
+
+???
+
+A React application is essentially a big tree of components, there
+will be data stores, utility code etc. but the front-end is a large
+tree of components.
+
+Testing the DOM output is fine for the leaves at the bottom, but as
+we go higher up the tree, that becomes brittle.
+
+In the example app, I have a list of tweets. One way to check if the
+list is working properly is to count the number of DOM nodes that
+have whatever class I use on the container of an individual tweet.
+
+If I make changes to the TweetItem component however, that could cause
+all the higher-level tests to fail. The higher up the tree we go, the
+more that could change under it and cause it to fail.
+
+This is a simple app but in a real world app we'd have several more levels.
+
+So the question is, how can we make testing of components at higher levels
+more like testing the ones at the bottom?
+
+---
+
+# Testing Component Types
+
+```js
+
+React.addons.TestUtils.scryRenderedComponentsWithType(component, type)
+                      .isCompositeComponentWithType(component, type)
+					  .findAllInRenderedTree(component, testFunction)
+
+```
+
+???
+
+The first tool we have is a set of functions in TestUtils that test
+the type of a component, rather than what the DOM looks like.
+This means that we can check that our tweet list renders the right
+number of TweetItem children and be isolated if a TweetItem changes.
+
+This is better, but it still means that when testing the TweetList
+component, we'd execute all the render() functions for lower levels
+in the tree.
+
+# Shallow Rendering
+
+```js
+const shallowRenderer = React.addons.TestUtils.createRenderer();
+const renderList = () => {
+	shallowRenderer.render(<TweetList tweets={TEST_TWEETS}/>);
+	const list = shallowRenderer.getRenderOutput();
+	return list.props.children.filter(component => component.type == TweetItem);
+}
+let items = renderList();
+
+expect(items.length).to.equal(TEST_TWEETS.length);
+expect(items[0].props.isSelected).to.equal(false);
+items[0].props.onClick();
+
+items = renderList();
+expect(items[0].props.isSelected).to.equal(true);
+
+```
+
+???
+
+React v0.13 has a new feature which helps with this. Its called shallow rendering.
+React has two main outputs - render a tree of components to a string, render a
+tree of components to a DOM.
+
+This gives us something like a third option. What it does is render only one level
+of the tree. In this case, I create a shallow renderer and ask it to render my TweetList.
+The render() function of my TweetList will be called and it will return a tree of elements.
+Usually what React would then do next is take each child element in the tree, create a corresponding
+component for it, and call the render() method on that and so on down the tree.
+
+What shallow rendering does is create a dummy component for each of the child elements,
+which doesn't actually get mounted or rendered.
+
+There are some limitations to this feature - you can't access 'refs' and
+you can't simulate an event on the child nodes. What you can do however is
+access the props that were passed to the children.
+
+We can think of a React render like a pipeline, data flows into the top and
+down the tree. What we can do is check that given the right inputs to a
+stage in the pipeline, the right data is passed on down to the next level.
+
+# Running Tests
+
+# Why Jest?
+
+* Automatic mocking (!)
+* Built-in fake DOM
+
+???
+
+Jest takes a 
+
+# Why not Jest?
+
+* Automatic mocking
+* Does not currently run in the browser
+* Differences between jsdom and &lt;insert browser here&gt;'s DOM
+* Browser dev tools
+
+# Mocking require()
+
+```
+require('module');
+```
+
+* rewire
+* mockery
+
+???
+
+Node.js' module loading system which implements require() is surprisingly
+simple. A little known fact is that you can 'require()' the module which
+implements 'require()', and monkey patch it or inspect internals. Not part of
+the public documentation, but that is how tools such as rewire() work.
+
+# Mocking require()
+
+```js
+import rewire from 'rewire';
+var TweetList = rewire('../src/TweetList');
+class StubTweetItem extends React.Component {
+	render() {
+		return <div>stub tweet</div>;
+	}
+}
+TweetList.__set__('TweetItem', StubTweetItem);
+```
+
+???
+
+There are several libraries that can be used to mock out require()'d modules.
+I'm using rewire(). That works by replacing the call to require() for the module
+you want to test with one to rewire(). That requires the real module and then
+returns one with methods that let you inspect and replace private variables,
+such as the modules it requires.
+
+This requires more work than Jest, but it gives you more control.
+
+rewire() also has the advantage that it works with Webpack. So you can write
+a set of tests that run in Node, and then bundle up the same set of tests
+and run them in a real browser.
+
+# What about Flux?
+
+[Diagram showing container and visual child]
+
+???
+
+The examples so far have.
+
+But what about more complex components that fetch and display data
+or trigger an action when interacted with?
+
+For this there are a couple of patterns that are helpful, the first
+is to separate components into those that are visual components
+that render something on screen and a container that is responsible
+for fetching data or anything else the child might need and then
+rendering the child visual component. For handling interaction,
+the container passes callbacks via props to its children, when
+those are triggered, the container dispatches appropriate actions.
+
+This is helpful for reusability because the visual component isn't
+connected to how its data is fetched, but also useful for testing.
+
+When testing the container, you can mock out the data source and check
+that when data updates occur it updates its state and renders the right
+type and number of children with the expected props. When the action
+callbacks passed to the children are invoked, you can check that the correct
+action is dispatched.
+
+When testing the visual component, you can check that given the right
+input props, it renders the right DOM structure and given the right
+inputs, it triggers the right callbacks on its props.
+
+--- 
 # Further Reading
 
 github.com/robertknight/react-testing
