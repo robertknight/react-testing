@@ -49,8 +49,6 @@ class: center, middle
 
 ???
 
-I'm an engineer at Mendeley, currently working on our desktop app.
-
 Something many of us have experienced across web and native apps is that
 writing tests is straightforward for the business logic but starts
 to get painful when it comes to the UI.
@@ -69,8 +67,8 @@ This is an overview of what I've learned and the resources I've found useful.
 Today I'm mostly going to talk about unit tests, but there is quite a lot
 that is reusable for integration tests as well.
 
-But firstly, what is it about UI testing that makes it more difficult
-than testing other parts of the system?
+But firstly, why is it that testing the UI is more difficult than testing other
+parts of the system?
 
 ---
 
@@ -83,8 +81,14 @@ class: center
 ???
 
 The first problem is that they usually require heavy machinery
-to run. That can be a pain to setup and slow and keep working
-in various environments.
+to run. 
+
+For the rest of my tests, I can simply run them at the command line,
+they execute quickly and if something fails debugging is usually straightforwards.
+
+UI tests on the other hand usually involve firing up a suitable environment,
+such as the browser and talking to it via a suitable protocol and this
+can introduce...
 
 ---
 class: center
@@ -95,8 +99,7 @@ class: center
 
 ???
 
-The next problem is that they run in complex environments
-which can be flakey...
+Flakiness.
 
 ---
 
@@ -106,8 +109,7 @@ which can be flakey...
 
 ???
 
-... and subject to timing issues. And when things fail, debugging problems
-after the fact can be difficult.
+... and things that fail due to subtle races and timing issues.
 
 ---
 class: middle
@@ -122,7 +124,9 @@ Node and the browser.
 
 Then I'm going to look at following React principles to
 make writing and debugging UI tests easier, including
-a look at some of the new features in the recent v0.13 release.
+a look at some of the new features in the recent v0.13 release,
+hacking Node's module loading for fun and profit and some patterns
+for structuring components for testability.
 
 As an example, I'm going to use a very poor man's Twitter client app.
 It displays a list of a user's recent tweets and lets them refresh
@@ -246,8 +250,11 @@ Using jsdom cuts out much of the complexity in the environment,
 but what about our application itself.
 
 ---
+
 # Isolation
 <img class="center-block" src="images/isolation-component-tree.svg" width="640">
+
+???
 
 Testing the DOM output is fine for the leaves at the bottom, but as
 we go higher up the tree, that becomes brittle.
@@ -259,6 +266,7 @@ have whatever class I use on the container of an individual tweet.
 If I make changes to the TweetItem component however, that could cause
 all the higher-level tests to fail. The higher up the tree we go, the
 more that could change under it and cause it to fail.
+
 ---
 
 # Think in Components & Data Flow
@@ -270,11 +278,15 @@ more that could change under it and cause it to fail.
 So what's a better way to think about this?
 
 A React application is essentially a big tree of components. We'd ideally
-like to deal with a piece at a time.
+like to deal with a piece at a time. What about data flow? What's a more 'pure'
+way to think about this?
 
 ---
+
 # Isolation
 <img class="center-block" src="images/component-inputs-outputs.svg" width="800">
+
+???
 
 If we zoom in on an individual component, we can think of it as a little
 state machine that takes a stream of props and events as inputs, and produces
@@ -286,7 +298,8 @@ to test.
 What we want to do is cut out the rest of the picture and test each little
 machine in isolation. There are several tools that can help with this.
 
-[Reference to Dave McCabe talk on property testing]
+[Reference to David Nolan, Dave McCabe talks on thinking of React components as stream
+processors and property testing]
 
 ---
 
@@ -312,7 +325,10 @@ it('should display tweets', () => {
 ???
 
 The first tool we have is a set of functions in TestUtils that test
-the type of a component, rather than what the DOM looks like.
+the type of a component that comes out of one
+of these little state machines, rather than what the DOM looks like
+at the end of the pipe.
+
 This means that we can check that our tweet list renders the right
 number of TweetItem children and be isolated if a TweetItem changes.
 
@@ -330,11 +346,12 @@ in the tree.
 
 React v0.13 has a new feature which helps with this. Its called shallow rendering.
 React has two main outputs - render a tree of components to a string, render a
-tree of components to a DOM.
+tree of components to a DOM, render to null.
 
 This gives us something like a third option. What it does is render only one level
 of the tree. In this case, I create a shallow renderer and ask it to render my TweetList.
 The render() function of my TweetList will be called and it will return a tree of elements.
+
 Usually what React would then do next is take each child element in the tree, create a corresponding
 component for it, and call the render() method on that and so on down the tree.
 
@@ -363,7 +380,7 @@ expect(items[0].props.isSelected).to.equal(true);
 ```
 
 ???
-This allows us to render just one item in the tree, and check what children
+This allows us to render just one level in the tree, and check what children
 were rendered and what data was passed down to them, so we can check one piece
 of the component pipeline.
 
@@ -397,11 +414,21 @@ Angular has a dependency injection framework for this, what about React?
 Facebook provides a unit testing tool geared towards React, Jest, which has
 a solution for this.
 
+Jest has a bunch of useful features that are good for React. It sets up jsdom for us,
+it automatically parallelizes tests and also has utilities to fast-forward time in
+tests and test asynchronous code without having to set up timer callbacks.
+
+The most interesting feature though is how it isolates components, stores etc.
+automatically.
+
 ---
+
 class: middle
 
 # Automatic mocking of `require()`
 <img class="center-block" src="images/isolation-require-graph.svg" width="640">
+
+???
 
 Jest observes that in a Node/CommonJS app, all your dependencies enter
 a module in the same way, via require(). If we take over require(), we
@@ -423,16 +450,18 @@ undefined is probably not a function
 
 * Automatic mocking
 * Does not currently run in the browser
-* Differences between jsdom and &lt;insert browser here&gt;'s DOM
+* Differences between jsdom and (insert browser here)'s DOM
 * Browser dev tools
 
 ???
+So how does this work out in practice?
 
 On the upside, it is very thorough - you're unlikely to
 accidentally use a real module in your tests.
 
 On the other hand, all of the functions
-created by the mocked modules return undefined by default. In JavaScript, that 'undefined'
+created by the mocked modules return undefined by default, basically violating the return type contract
+of the function. In JavaScript, that 'undefined'
 value can propagate a long way through the system before it eventually turns into an error.
 
 I found that taking an existing codebase and making it work with Jest can be tricky
@@ -455,9 +484,11 @@ class: center, middle
 So what goes on when we require() a module?
 
 Node.js' module loading system which implements require() is surprisingly
-simple. A little known fact is that you can 'require()' the module which
-implements 'require()', and monkey patch it or inspect internals. Not part of
-the public documentation, but that is how tools such as rewire() work.
+simple. A few hundred lines of code which loads your source, wraps it in a function and passes a module object to it. What gets passed to V8 looks a lot like the JS that browserify or Webpack generate for a bundle.
+
+A little known fact is that you can 'require()' the module which
+implements 'require()', it's called 'module', and monkey patch it or inspect internals. Not part of
+the public documentation, but there are mocking tools such as mockery or rewire that uses it.
 
 ---
 
@@ -492,11 +523,11 @@ rewire() also has the advantage that it works with Webpack. So you can write
 a set of tests that run in Node, and then bundle up the same set of tests
 and run them in a real browser.
 
+You can also vary the level of stubbing depending on the kind of test you want to write.
+
 ---
 
-## Visual and Container Components
-
-<img class="center-block" src="images/container-components.svg" width="500">
+## What the Flux?
 
 ???
 
@@ -505,6 +536,14 @@ components, ones that fetch data, send actions to Flux stores etc?
 
 Something that I've found helpful was a pattern mentioned at a React.conf talk
 in January which makes testing these easier.
+
+---
+
+## Visual and Container Components
+
+<img class="center-block" src="images/container-components.svg" width="500">
+
+???
 
 That is to separate out
 complex components into one which is purely visual - it takes data
@@ -526,13 +565,20 @@ input props, it renders the right DOM structure and given the right
 inputs, it triggers the right callbacks on its props.
 
 ---
+
 ## Didn't I see this somewhere before...
 
 <img class="center-block" src="images/container-components-mvc.svg" width="500">
 
+???
+
 This does start to look somewhat like the controller in a traditional MVC
 framework, the difference though is that the data flow is better defined
 and the controller doesn't write to the model directly.
+
+If you're using this with Flux, then most of the early implementations used
+mixins to fetch data into your component. Newer ones like Flummox provide
+these wrapper containers for you, so you don't have to write them yourself.
 
 ---
 

@@ -37,15 +37,18 @@ function writeCache(tweets) {
 function sendTweets(pendingTweets, sentTweets, res) {
 	assert(pendingTweets.length > 0);
 
-	const nextTweet = pendingTweets.shift();
-	sentTweets.unshift(nextTweet);
+	let minSentTweets = Math.max(sentTweets.length + 1, 5);
+	while (sentTweets.length < minSentTweets && pendingTweets.length > 0) {
+		const nextTweet = pendingTweets.shift();
+		sentTweets.unshift(nextTweet);
+	}
 
 	// send tweets after a delay to simulate latency
 	// when fetching updates
 	setTimeout(() => {
 		res.send(sentTweets);
 		res.end();
-	}, 500);
+	}, 300);
 }
 
 function fetchTweets() {
