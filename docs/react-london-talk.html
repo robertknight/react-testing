@@ -53,7 +53,10 @@ class: center, middle
 
 ???
 
+I'm an engineer at Mendeley, currently working on our desktop app.
 
+Something many of us have experienced across web and native apps is that testing
+gets painful when it comes to the UI.
 
 ---
 
@@ -66,7 +69,8 @@ class: center
 ???
 
 The first problem is that they usually require heavy machinery
-to run. That can be a pain to setup and slow.
+to run. That can be a pain to setup and slow and keep working
+in various environments.
 
 ---
 class: center
@@ -82,11 +86,20 @@ which can be flakey.
 
 ---
 
-# UI Testing with React
+## Timing Issues
+
+<img class="center-block" src="images/timing-issues.jpg" width="500">
 
 ???
 
-React is like a virtual machine which isolates us from
+... and subject to timing issues.
+
+---
+class: middle
+
+# UI Testing with React
+
+???
 
 First I'm going to go briefly over the basic of testing
 a React app and how to get a component test running in both
@@ -307,10 +320,10 @@ which doesn't actually get mounted or rendered.
 
 class: middle
 ```js
-const shallowRenderer = React.addons.TestUtils.createRenderer();
+*const shallowRenderer = React.addons.TestUtils.createRenderer();
 const renderList = () => {
 	shallowRenderer.render(<TweetList tweets={TEST_TWEETS}/>);
-	const list = shallowRenderer.getRenderOutput();
+*	const list = shallowRenderer.getRenderOutput();
 	return list.props.children.filter(component => component.type == TweetItem);
 }
 let items = renderList();
@@ -348,13 +361,23 @@ If you're used to Angular, that has a dependency injection
 * Automatic mocking
 * Built-in fake DOM
 * Automatic parallelization
+* Fast-forward time
 
 ???
 
 Facebook provides a unit testing tool geared towards React, Jest.
 For testing in node, its a batteries-included solution.
 
-The approach to mocking is dramatic - 
+---
+class: middle
+
+# Mocking `require()`
+<img class="center-block" src="images/isolation-require-graph.svg" width="640">
+
+The most interesting feature is the approach to mocking. Jest observes
+that in CommonJS apps, most dependencies enter the system via the same
+mechanism, require() and it uses that as a place to cut-out the original
+functionality and replace it with a mock.
 
 ---
 
@@ -436,10 +459,12 @@ and run them in a real browser.
 ???
 
 That covers isolating individual components. But what about more complex
-components, ones that fetch data, send actions to Flux stores etc.
+components, ones that fetch data, send actions to Flux stores etc?
 
-I'm just going to recap a pattern that was mentioned in a React.conf talk
-in January which makes testing these easier. That is to separate out
+Something that I've found helpful was a pattern mentioned at a React.conf talk
+in January which makes testing these easier.
+
+That is to separate out
 complex components into one which is purely visual - it takes data
 as input, displays it and responds to user inputs by invoking callbacks
 passed to it and a container which is responsible for fetching data
@@ -457,6 +482,11 @@ action is dispatched.
 When testing the visual component, you can check that given the right
 input props, it renders the right DOM structure and given the right
 inputs, it triggers the right callbacks on its props.
+
+---
+## Didn't I see this somewhere before...
+
+<img class="center-block" src="images/container-components-mvc.svg" width="500">
 
 This does start to look somewhat like the controller in a traditional MVC
 framework, the difference though is that the data flow is better defined
