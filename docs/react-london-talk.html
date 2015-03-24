@@ -49,14 +49,26 @@ class: center, middle
 
 ---
 
+I'm an engineer at Mendeley, currently working on our desktop app.
+
+Something many of us have experienced across web and native apps is that
+writing tests is straightforward for the business logic but starts
+to get painful when it comes to the UI.
+
+I wanted to understand how React's concepts around components,
+data-flow and the virtual UI tree applied to testing React apps.
+
+This is an overview of what I've learned and the resources I've found useful.
+
 # UI Testing
 
 ???
 
-I'm an engineer at Mendeley, currently working on our desktop app.
+Today I'm mostly going to talk about unit tests, but there is quite a lot
+that is reusable for integration tests as well.
 
-Something many of us have experienced across web and native apps is that testing
-gets painful when it comes to the UI.
+But firstly, what is it about UI testing that makes it more difficult
+than testing other parts of the system?
 
 ---
 
@@ -82,7 +94,7 @@ class: center
 ???
 
 The next problem is that they run in complex environments
-which can be flakey.
+which can be flakey...
 
 ---
 
@@ -92,7 +104,8 @@ which can be flakey.
 
 ???
 
-... and subject to timing issues.
+... and subject to timing issues. And when things fail, debugging problems
+after the fact can be difficult.
 
 ---
 class: middle
@@ -105,9 +118,13 @@ First I'm going to go briefly over the basic of testing
 a React app and how to get a component test running in both
 Node and the browser.
 
-Then I'll look at different ways to isolate pieces of the
-app in testing to make debugging easier, including some
-of the new features in the recent v0.13 release.
+Then I'm going to look at following React principles to
+make writing and debugging UI tests easier, including
+a look at some of the new features in the recent v0.13 release.
+
+As an example, I'm going to use a very poor man's Twitter client app.
+It displays a list of a user's recent tweets and lets them refresh
+the view.
 
 ---
 
@@ -127,13 +144,11 @@ React.addons.TestUtils.Simulate.click(component, event)
 
 ???
 
-React ships with a utility library called TestUtils that lets
-us render a component into a detached DOM element, get access to
+The starting point for writing a UI test in React is a utility
+library called TestUtils.
+
+It lets us render a component into a detached DOM element, get access to
 the component's DOM nodes and simulate events on them.
-
-This is fine for simple components, we render a component with
-a set of props and state, and make assertions on the DOM markup.
-
 
 ---
 class: middle
@@ -149,12 +164,12 @@ describe('TweetItem', () => {
 			text: 'Announcing React v0.13',
 			...
 		};
-		const item = React.addons.TestUtils.renderIntoDocument(
+*		const item = React.addons.TestUtils.renderIntoDocument(
 			<TweetItem tweet={tweet}/>
 		);
 
-		const userScreenName = React.findDOMNode(item.refs.userScreenName);
-		expect(userScreenName.textContent).to.equal('@' + tweet.user.screenName);
+*		const userScreenName = React.findDOMNode(item.refs.userScreenName);
+*		expect(userScreenName.textContent).to.equal('@' + tweet.user.screenName);
 
 		const text = React.findDOMNode(item.refs.text);
 		expect(text.textContent).to.equal(tweet.text);
@@ -164,11 +179,12 @@ describe('TweetItem', () => {
 
 ???
 
-A basic test for a React component consists of rendering it either into
-a detached DOM element or a container element on the page, then getting
-a reference to the rendered DOM nodes, checking their visual structure
-and using the Simulate functions to simulate user input and checking
-that they respond as we expect.
+Here we have a component called `TweetItem` which renders an individual entry
+in the list. To test it, we render it with fake data, get a reference to the DOM
+node and check that it has the expected content.
+
+To run this, we need a test runner that fires up a browser, connects to it
+via some protocol and drives it, right?
 
 ---
 
@@ -182,9 +198,9 @@ that they respond as we expect.
 jsdom.env({
 	html: '<body><div id="app"></div></body>',
 	done: (errors, window) => {
-		global.document = window.document;
-		global.window = window;
-		global.navigator = window.navigator;
+*		global.document = window.document;
+*		global.window = window;
+*		global.navigator = window.navigator;
 	}
 });
 ```
@@ -196,15 +212,18 @@ mocha --require setup.js <test files>
 
 ???
 
-This works fine in a browser, but browsers add complexity and performance
-overhead to the testing environment.
-
-Most React components don't actually need a full fidelity environment to work
+Fortunately, no. Most React components don't actually need a full fidelity environment to work
 in though. jsdom provides an implementation of the DOM that is good enough for
 testing most components.
 
-When React loads, it inspects its execution environment and checks whether the
-DOM is available. This means that we need to set up jsdom _before_ requiring React.
+[Code Walkthrough]
+
+An important point is that When React loads, it inspects its execution environment
+and checks whether the DOM is available.
+This means that we need to set up jsdom _before_ requiring React. We do this here
+using mocha's --require argument.
+
+[Demo running command-line tests]
 
 Facebook's Jest testing tool ships with jsdom and does this for you, but it is
 quite easy to integrate with other frameworks.
@@ -216,33 +235,17 @@ For running the tests in the browser, you can take the same
 code and use your favorite module bundler such as Webpack or Browserify.
 The only difference is that you don't load the fake DOM environment.
 
-[Demo - Mocha tests on the command-line and
- in the browser]
-
-[Reference to Github repo]
-
-# 
-
-???
+[Demo - Mocha tests in the browser]
 
 So that's the basics we need for running a UI test on the command line
 and in the browser.
 
-Getting the browser out the way for routine testing makes
-the workflow faster. If 'mocha' is set up to watch your test files
-for changes it can re-run appropriate tests in a few hundred milliseconds.
-
-It makes it easier to run tests in a CI environment and cuts out some sources
-of unpredictability.
-
-But if we have a complex UI and we're testing a component near the top of the
-tree, it is still vulnerable to being broken by a change lower down.
+Using jsdom cuts out much of the complexity in the environment,
+but what about our application itself.
 
 ---
 # Isolation
 <img class="center-block" src="images/isolation-component-tree.svg" width="640">
-
-A React application is essentially a big tree of components.
 
 Testing the DOM output is fine for the leaves at the bottom, but as
 we go higher up the tree, that becomes brittle.
@@ -255,6 +258,19 @@ If I make changes to the TweetItem component however, that could cause
 all the higher-level tests to fail. The higher up the tree we go, the
 more that could change under it and cause it to fail.
 ---
+
+# Think in Components & Data Flow
+
+<img class="center-block" src="images/lego-components.jpg" width="640">
+
+???
+
+So what's a better way to think about this?
+
+A React application is essentially a big tree of components. We'd ideally
+like to deal with a piece at a time.
+
+---
 # Isolation
 <img class="center-block" src="images/component-inputs-outputs.svg" width="800">
 
@@ -262,15 +278,13 @@ If we zoom in on an individual component, we can think of it as a little
 state machine that takes a stream of props and events as inputs, and produces
 a stream of child component trees and callbacks as outputs.
 
+At this point, it starts to look more like a nice pure function which is easy
+to test.
+
 What we want to do is cut out the rest of the picture and test each little
 machine in isolation. There are several tools that can help with this.
----
 
-# Think in Components & Data Flow
-
-<img class="center-block" src="images/lego-components.jpg" width="640">
-
-???
+[Reference to Dave McCabe talk on property testing]
 
 ---
 
@@ -284,6 +298,15 @@ React.addons.TestUtils.scryRenderedComponentsWithType(component, type)
 
 ```
 
+```js
+it('should display tweets', () => {
+	const list = TestUtils.renderIntoDocument(
+		<TweetList tweets={TEST_TWEETS}/>
+	);
+	const items = TestUtils.scryRenderedComponentsWithType(list, TweetItem);
+	expect(items.length).to.equal(TEST_TWEETS.length);
+});
+```
 ???
 
 The first tool we have is a set of functions in TestUtils that test
@@ -338,12 +361,16 @@ expect(items[0].props.isSelected).to.equal(true);
 ```
 
 ???
-There are some limitations to this feature - you can't access 'refs' and
-you can't simulate an event on the child nodes. What you can do however is
-access the props that were passed to the children, so you can test a piece of the
-component pipeline.
+This allows us to render just one item in the tree, and check what children
+were rendered and what data was passed down to them, so we can check one piece
+of the component pipeline.
+
+In theory, this should allow us to test a lot of components without a DOM
+at all. In practice it is still an early feature and there are limitations.
+You can't access 'refs' of children and you can't simulate events on them.
 
 ---
+
 class: center, middle
 
 # Mocking
@@ -351,37 +378,46 @@ class: center, middle
 ???
 
 Shallow rendering helps with isolating the rendering part, but we still have all the other
-logic that touches components, like fetching data.
+logic that touches components, like stores to fetch data from, actions that get dispatched
+when you interact with the UI etc.
 
-If you're used to Angular, that has a dependency injection
+Angular has a dependency injection framework for this, what about React?
 
 ---
 <img class="center-block" src="images/jest-logo.png">
 
-* Automatic mocking
 * Built-in fake DOM
 * Automatic parallelization
 * Fast-forward time
 
 ???
 
-Facebook provides a unit testing tool geared towards React, Jest.
-For testing in node, its a batteries-included solution.
+Facebook provides a unit testing tool geared towards React, Jest, which has
+a solution for this.
 
 ---
 class: middle
 
-# Mocking `require()`
+# Automatic mocking of `require()`
 <img class="center-block" src="images/isolation-require-graph.svg" width="640">
 
-The most interesting feature is the approach to mocking. Jest observes
-that in CommonJS apps, most dependencies enter the system via the same
-mechanism, require() and it uses that as a place to cut-out the original
-functionality and replace it with a mock.
+Jest observes that in a Node/CommonJS app, all your dependencies enter
+a module in the same way, via require(). If we take over require(), we
+can mock out components, stores, actions, external data sources, the file system
+etc. in the same way.
+
+Wherever you have a require(), Jest will cut out that piece of functionality
+and replace it with a mock which has the same structure, but all functions
+are mocks which capture information about the way they are called and return
+undefined.
 
 ---
 
 # Caveats
+
+```js
+undefined is probably not a function
+```
 
 * Automatic mocking
 * Does not currently run in the browser
@@ -390,20 +426,22 @@ functionality and replace it with a mock.
 
 ???
 
-There are some caveats though, it doesn't currently run in the browser. Automatic
-mocking is interesting. On the upside, it is very thorough - you're unlikely to
-accidentally use a real module in your tests. On the other hand, all of the functions
+On the upside, it is very thorough - you're unlikely to
+accidentally use a real module in your tests.
+
+On the other hand, all of the functions
 created by the mocked modules return undefined by default. In JavaScript, that 'undefined'
 value can propagate a long way through the system before it eventually turns into an error.
 
 I found that taking an existing codebase and making it work with Jest can be tricky
 because of this.
 
-The idea of hooking into require() is very useful though -
-especially because a common pattern is to make a React component a module.
+There are some other caveats, it doesn't currently run in the browser for example
+and is currently tied to older versions of iojs and jsdom.
 
-it means we can use the same approach to mock components, Flux stores, remote
-data sources etc. So how does hooking into require() work?
+The idea of hooking into require() is very useful though, so I looked at other ways
+of doing that, preferably one which works both in the browser and can also be
+used selectively in integration tests.
 
 ---
 class: center, middle
@@ -411,6 +449,8 @@ class: center, middle
 .center.large-code[`require('module');`]
 
 ???
+
+So what goes on when we require() a module?
 
 Node.js' module loading system which implements require() is surprisingly
 simple. A little known fact is that you can 'require()' the module which
