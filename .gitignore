@@ -2,3 +2,4 @@ node_modules/
 dist/
 *.swp
 server-config.js
+.~lock*
