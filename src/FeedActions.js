@@ -1,10 +1,11 @@
+import fetch from './fetch';
 import {Actions} from 'flummox';
 
-const TWITTER_PROXY_URL = 'http://localhost:3000/timeline';
+const TWITTER_FEED_URL = 'data/tweets.js';
 
 export default class FeedActions extends Actions {
 	fetchTimeline() {
-		return fetch(TWITTER_PROXY_URL).then(res => {
+		return fetch(TWITTER_FEED_URL).then(res => {
 			return res.json();
 		}).then(json => {
 			return json.map(entry => {

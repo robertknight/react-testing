@@ -18,12 +18,11 @@ module.exports = {
 			test: /tests.*_test\.js$/,
 			loader: 'mocha-loader!babel-loader'
 		},{
-			test: /node_modules\/jsdom/,
+			test: /node_modules\/(jsdom|node-fetch)/,
 			loader: 'null-loader'
 		}]
 	},
 	plugins: [
 		new RewirePlugin()
-	],
-	devtool: 'eval'
+	]
 };

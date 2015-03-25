@@ -1,12 +1,37 @@
 React Testability
 =================
 
-This is simple Twitter client project which demonstrates
+This is a simple Twitter client project which demonstrates
 various tools and techniques for writing tests for React
-components.
+components, written as part of [a talk](https://robertknight.github.io/react-testing/docs/react-london-talk.html) at the
+[London React](http://www.meetup.com/London-React-User-Group/) meetup.
+
+It shows the essentials for writing tests for a React application that can be run in Node
+and the browser, isolating modules under test using shallow rendering and rewire() and
+using Flummox for testable use of the Flux architecture.
 
 ## Requirements
  * [iojs](https://iojs.org) is required in order to use the current version of the jsdom library.
+   If you don't have iojs, you can edit package.json to refer to an older version of jsdom
+   and use Node.
+
+## Building and running
+
+```
+npm install .
+make
+
+# run the app
+# (you can also use 'webpack-dev-server')
+python -m SimpleHTTPServer 8000
+open http://localhost:8000
+
+# run tests in the browser
+open tests.html
+
+# run tests on the command-line
+make test
+```
 
 ## Libraries and Tools Used
  * React (obviously). v0.13 is used for [shallow-rendering support](http://facebook.github.io/react/docs/test-utils.html#shallow-rendering) which enables
@@ -22,8 +47,12 @@ components.
    easy to inject fake/mock actions in unit and integration tests.
  * [Rewire](https://github.com/jhnns/rewire) is used to show one approach to mocking out
    React components in tests.
+ * [fetch](https://github.com/whatwg/fetch) and [node-fetch](https://github.com/bitinn/node-fetch) provide a uniform API
+   for fetching data in the browser and Node
 
 ## Recommended Reading & Videos
+ * [Awesome React - Testing React Tutorials](https://github.com/enaqx/awesome-react#testing-react-tutorials) - Awesome React is a great collection
+   of links for all aspects of building React apps. The section on testing references a number of useful tutorials.
  * Separating visual and data-fetching components
   * [React.js Conf 2015 - Making your app fast with high-performance components](https://www.youtube.com/watch?v=KYzlpRvWZ6c). This talk introduces a policy of separating pure visual components from containers which contain data fetching logic.
  * Beyond unit testing

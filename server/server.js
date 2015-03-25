@@ -17,7 +17,7 @@ import Q from 'q';
 
 import Twitter from 'twit';
 
-const CACHE_FILE = 'tweet-cache.js';
+const CACHE_FILE = 'data/tweets.js';
 
 function readCache() {
 	try {
@@ -31,7 +31,7 @@ function readCache() {
 }
 
 function writeCache(tweets) {
-	fs.writeFileSync('tweet-cache.js', JSON.stringify(tweets, null, 2));
+	fs.writeFileSync(CACHE_FILE, JSON.stringify(tweets, null, 2));
 }
 
 function sendTweets(pendingTweets, sentTweets, res) {
@@ -52,9 +52,9 @@ function sendTweets(pendingTweets, sentTweets, res) {
 }
 
 function fetchTweets() {
-	var params = {};
+	var params = { screen_name: 'reactjs' };
 	var result = Q.defer();
-	client.get('statuses/home_timeline', params, (error, tweets, response) => {
+	client.get('statuses/user_timeline', params, (error, tweets, response) => {
 		if (error) {
 			console.error('failed to fetch Tweets from Twitter API:', error.toString());
 			result.reject(error);
