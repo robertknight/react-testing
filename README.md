@@ -37,7 +37,7 @@ make test
  * React (obviously). v0.13 is used for [shallow-rendering support](http://facebook.github.io/react/docs/test-utils.html#shallow-rendering) which enables
    testing of rendering of a single level of the component tree in isolation.
  * [Mocha](http://mochajs.org/) and chai are the basic testing frameworks used, these were chosen as they
-   are popular, polished and well documented. The 
+   are popular, polished and well documented.
  * [Webpack](http://webpack.github.io/) is used to package the tests for running/debugging in the
    browser.
  * [jsdom](https://github.com/tmpvar/jsdom) is used for testing of rendering DOM components outside of the browser. Version 4.x is used which requires iojs.
