@@ -3,7 +3,7 @@ React Testability
 
 This is a simple Twitter client project which demonstrates
 various tools and techniques for writing tests for React
-components, written as part of [a talk](https://robertknight.github.io/react-testing/docs/react-london-talk.html) at the
+components, written as part of a talk ([slides](https://robertknight.github.io/react-testing/docs/react-london-talk.html),  [video](https://www.youtube.com/watch?v=_RKrgouBvLM)) at the
 [London React](http://www.meetup.com/London-React-User-Group/) meetup.
 
 It shows the essentials for writing tests for a React application that can be run in Node
