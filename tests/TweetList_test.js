@@ -1,4 +1,6 @@
-import React from 'react/addons';
+var React = require("react");
+var ReactTestUtils = require('react-addons-test-utils');
+
 import rewire from 'rewire';
 import {expect} from 'chai';
 
@@ -33,19 +35,20 @@ class StubTweetItem extends React.Component {
 }
 
 describe('TweetList', () => {
+        var ReactDOM = require('react-dom');
 	beforeEach(() => {
 		TweetList = rewire('../src/TweetList');
 	});
 
 	it('should display tweets (DOM class matching)', () => {
-		const list = React.addons.TestUtils.renderIntoDocument(<TweetList tweets={TEST_TWEETS}/>);
-		const items = React.findDOMNode(list).querySelectorAll('.tweet-item');
+		const list = ReactTestUtils.renderIntoDocument(<TweetList tweets={TEST_TWEETS}/>);
+		const items = ReactDOM.findDOMNode(list).querySelectorAll('.tweet-item');
 		expect(items.length).to.equal(TEST_TWEETS.length);
 	});
 
 	it('should display tweets (component type matching)', () => {
-		const list = React.addons.TestUtils.renderIntoDocument(<TweetList tweets={TEST_TWEETS}/>);
-		const items = React.addons.TestUtils.scryRenderedComponentsWithType(list, TweetItem);
+		const list = ReactTestUtils.renderIntoDocument(<TweetList tweets={TEST_TWEETS}/>);
+		const items = ReactTestUtils.scryRenderedComponentsWithType(list, TweetItem);
 		expect(items.length).to.equal(TEST_TWEETS.length);
 	});
 
@@ -53,10 +56,10 @@ describe('TweetList', () => {
 		TweetList.__set__('TweetItem', StubTweetItem);
 
 		utils.withContainer(element => {
-			const list = React.render(
+			const list = ReactDOM.render(
 				<TweetList tweets={TEST_TWEETS}/>
 			, element);
-			const items = React.addons.TestUtils.scryRenderedComponentsWithType(list, StubTweetItem);
+			const items = ReactTestUtils.scryRenderedComponentsWithType(list, StubTweetItem);
 
 			// check that the correct number of tweets
 			// were rendered
@@ -71,7 +74,7 @@ describe('TweetList', () => {
 	});
 
 	it('should display tweets (shallow rendering)', () => {
-		const shallowRenderer = React.addons.TestUtils.createRenderer();
+		const shallowRenderer = ReactTestUtils.createRenderer();
 		const renderList = () => {
 			shallowRenderer.render(<TweetList tweets={TEST_TWEETS}/>);
 			const list = shallowRenderer.getRenderOutput();
@@ -86,8 +89,8 @@ describe('TweetList', () => {
 		TweetList.__set__('TweetItem', StubTweetItem);
 
 		utils.withContainer(element => {
-			const list = React.render(<TweetList tweets={TEST_TWEETS}/>, element);
-			const items = React.addons.TestUtils.scryRenderedComponentsWithType(list, StubTweetItem);
+			const list = ReactDOM.render(<TweetList tweets={TEST_TWEETS}/>, element);
+			const items = ReactTestUtils.scryRenderedComponentsWithType(list, StubTweetItem);
 			expect(items[0].props.isSelected).to.equal(false);
 
 			items[0].props.onClick();
@@ -96,9 +99,9 @@ describe('TweetList', () => {
 	});
 
 	it('should select tweet on click (shallow rendering)', () => {
-		const shallowRenderer = React.addons.TestUtils.createRenderer();
+		const shallowRenderer = ReactTestUtils.createRenderer();
+                shallowRenderer.render(<TweetList tweets={TEST_TWEETS}/>);
 		const renderList = () => {
-			shallowRenderer.render(<TweetList tweets={TEST_TWEETS}/>);
 			const list = shallowRenderer.getRenderOutput();
 			return list.props.children.filter(component => component.type == TweetItem);
 		}
