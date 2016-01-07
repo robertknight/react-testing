@@ -1,4 +1,4 @@
-import React from 'react';
+var React = require("react");
 
 export function withContainer(callback) {
 	if (typeof document === 'undefined') {
@@ -8,12 +8,11 @@ export function withContainer(callback) {
 	// React checks whether the DOM is available when first required.
 	// Make sure that the document/window global objects were set up
 	// before React was loaded
-	var ExecutionEnvironment = require('react/lib/ExecutionEnvironment');
+        var ReactDOM = require('react-dom');
+        var ExecutionEnvironment = require('exenv');
 	if (!ExecutionEnvironment.canUseDOM) {
 		throw new Error('document or window was not set up when React detected its environment');
 	}
-
-	var React = require('react');
 
 	let appElement = document.getElementById('app');
 	if (!appElement) {
@@ -24,6 +23,6 @@ export function withContainer(callback) {
 
 	appElement.innerHTML = '';
 	callback(appElement);
-	React.unmountComponentAtNode(appElement);
+	ReactDOM.unmountComponentAtNode(appElement);
 }
 

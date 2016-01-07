@@ -1,4 +1,5 @@
 var RewirePlugin = require('rewire-webpack');
+var webpack = require('webpack');
 
 module.exports = {
 	entry: {
@@ -23,6 +24,8 @@ module.exports = {
 		}]
 	},
 	plugins: [
-		new RewirePlugin()
+		new RewirePlugin(),
+		new webpack.IgnorePlugin(/jsdom$/),
+		new webpack.IgnorePlugin(/node-fetch$/)
 	]
 };
