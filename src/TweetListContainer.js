@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Component} from 'react';
 
 import TweetList from './TweetList';
 import TweetStore from './TweetStore';
@@ -6,7 +6,7 @@ import TweetStore from './TweetStore';
 /** A wrapper around TweetList which handles data fetching
  * for that component.
  */
-export default class TweetListContainer extends React.Component {
+export default class TweetListContainer extends Component {
 	constructor(props) {
 		super(props);
 
@@ -43,4 +43,3 @@ export default class TweetListContainer extends React.Component {
 		}/>
 	}
 }
-

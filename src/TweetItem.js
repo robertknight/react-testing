@@ -1,8 +1,8 @@
 import classNames from 'classnames';
-import React from 'react';
+import React, {Component} from 'react';
 
-function relativeDate(input: Date) {
-	const ageMs = Date.now() - input;	
+function relativeDate(input) {
+	const ageMs = Date.now() - input;
 	const ageMinutes = Math.floor(ageMs / 1000.0 / 60.0);
 	const ageHours = Math.floor(ageMinutes / 60.0);
 
@@ -17,7 +17,7 @@ function relativeDate(input: Date) {
 	}
 }
 
-export default class TweetItem extends React.Component {
+export default class TweetItem extends Component {
 	constructor(props) {
 		super(props);
 	}

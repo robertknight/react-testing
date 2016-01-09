@@ -11,9 +11,7 @@ and the browser, isolating modules under test using shallow rendering and rewire
 using Flummox for testable use of the Flux architecture.
 
 ## Requirements
- * [iojs](https://iojs.org) is required in order to use the current version of the jsdom library.
-   If you don't have iojs, you can edit package.json to refer to an older version of jsdom
-   and use Node.
+ * NodeJS 4.x or later is required in order to use the current version of the jsdom library.
 
 ## Building and running
 

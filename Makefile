@@ -19,3 +19,6 @@ test-watch:
 
 serve:
 	$(NODE_BIN)/webpack-dev-server --hot --quiet
+
+clean:
+	rm -rf dist

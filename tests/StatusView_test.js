@@ -1,7 +1,8 @@
 import {Actions, Flux} from 'flummox';
 import {expect} from 'chai';
 import Q from 'q';
-import React from 'react/addons';
+import * as React from 'react';
+import {Simulate, renderIntoDocument} from 'react-addons-test-utils';
 
 import StatusView from '../src/StatusView';
 import * as utils from './utils';
@@ -40,7 +41,7 @@ describe('StatusView', () => {
 			}
 		});
 
-		const statusView = React.addons.TestUtils.renderIntoDocument(
+		const statusView = renderIntoDocument(
 			<StatusView flux={flux}/>
 		);
 		const refreshButton = statusView.refs.spinner;
@@ -48,7 +49,7 @@ describe('StatusView', () => {
 		// check that the status view shows the refresh indicator when
 		// clicked, and stops the indicator once the refresh completes
 		expect(fetchCount).to.equal(0);
-		React.addons.TestUtils.Simulate.click(refreshButton);
+		Simulate.click(refreshButton);
 		expect(fetchCount).to.equal(1);
 		expect(statusView.state.refreshing).to.equal(true);
 

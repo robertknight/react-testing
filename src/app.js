@@ -1,5 +1,6 @@
 import {Flux} from 'flummox';
-import React from 'react';
+import React, {Component} from 'react';
+import * as ReactDOM from 'react-dom';
 
 import FeedActions from './FeedActions';
 import StatusView from './StatusView';
@@ -19,7 +20,7 @@ class AppFlux extends Flux {
 	}
 }
 
-class App extends React.Component {
+class App extends Component {
 	constructor(props) {
 		super(props);
 
@@ -47,4 +48,4 @@ flux.addListener('dispatch', action => {
 });
 
 var content = document.getElementById('app');
-React.render(<App flux={flux}/>, content);
+ReactDOM.render(<App flux={flux}/>, content);
