@@ -32,36 +32,6 @@ class StubTweetItem extends Component {
   }
 }
 
-/**
-* Stubs the default export of a dependency in a rewired module.
-*/
-function stubDefaultExport(rewiredModule, dependencyName, stub) {
-  // This is a hack which demonstrates an inherent flaw with using
-  // "rewire" to mock ES6 imports that have been transpiled using
-  // Babel, which unfortunately I realized after I gave the original talk
-  // because rewire _happened_ to work with earlier versions of Babel.
-  //
-  // The problem is that rewire works by replacing the values of
-  // variables inside your stubbed module. So if we have a CommonJS
-  // import "var myModule = require('my-module')" then rewire can be used
-  // to replace "myModule" with a stub. However, if we use ES2015-style imports
-  // eg. "import SomeComponent from './src/SomeComponent'" then it is
-  // entirely up to Babel how it translates that into JS - there is no guarantee
-  // that it will generate "var SomeComponent = require('...')".
-  //
-  // In fact, what Babel 6 happens to generate is
-  //     var _SomeComponent2 = require('./src/SomeComponent');
-  //     // later in the code:
-  //     _SomeComponent2.default
-  //
-  // The _correct_ solution here would be to use a library such as proxyquire
-  // which stubs the 'require()' call, _not_ the internal variable name.
-  //
-  rewiredModule.__set__('_' + dependencyName + '2', {
-    default: stub,
-  });
-}
-
 describe('TweetList', () => {
   var tweetListLib;
   var TweetList;
@@ -84,7 +54,7 @@ describe('TweetList', () => {
   });
 
   it('should display tweets (stub component type matching)', () => {
-    stubDefaultExport(tweetListLib, 'TweetItem', StubTweetItem);
+    tweetListLib.__set__('TweetItem', StubTweetItem);
 
     utils.withContainer(element => {
       const list = render(
@@ -117,7 +87,7 @@ describe('TweetList', () => {
     });
 
     it('should select tweet on click (stub component)', () => {
-      stubDefaultExport(tweetListLib, 'TweetItem', StubTweetItem);
+      tweetListLib.__set__('TweetItem', StubTweetItem);
 
       utils.withContainer(element => {
         const list = render(<TweetList tweets={TEST_TWEETS}/>, element);

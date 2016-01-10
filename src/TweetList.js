@@ -1,6 +1,16 @@
 import React, {Component} from 'react';
 
-import TweetItem from './TweetItem';
+// Imports that are going to be stubbed need to use CommonJS style
+// imports rather than ES6-style imports. This is because rewire works
+// by changing the value of top-level variables within a module and
+// the names of variables generated when Babel converts 'import foo from "bar"'
+// to ES5 is not defined.
+//
+// In future, it should be possible to use
+// https://github.com/speedskater/babel-plugin-rewire instead of rewire, once
+// compatibility issues with Babel 6 are resolved, see
+// https://github.com/speedskater/babel-plugin-rewire/issues/71
+var TweetItem = require('./TweetItem').default;
 
 export default class TweetList extends Component {
   constructor(props) {
