@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {unmountComponentAtNode} from 'react-dom';
 
 export function withContainer(callback) {
   if (typeof document === 'undefined') {
@@ -16,6 +17,5 @@ export function withContainer(callback) {
 
   appElement.innerHTML = '';
   callback(appElement);
-  React.unmountComponentAtNode(appElement);
+  unmountComponentAtNode(appElement);
 }
-
