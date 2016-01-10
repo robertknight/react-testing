@@ -1,4 +1,4 @@
-import fetch from './fetch';
+import fetch from 'isomorphic-fetch';
 import {Actions} from 'flummox';
 
 const TWITTER_FEED_URL = 'data/tweets.js';
@@ -25,4 +25,3 @@ export default class FeedActions extends Actions {
     });
   }
 }
-

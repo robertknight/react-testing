@@ -17,12 +17,10 @@
     "cors": "^2.5.3",
     "express": "^4.12.3",
     "flummox": "^3.1.1",
-    "node-fetch": "^1.0.5",
     "q": "^1.2.0",
     "react": "^0.14.6",
     "react-dom": "^0.14.6",
-    "twit": "^1.1.20",
-    "whatwg-fetch": "^0.7.0"
+    "twit": "^1.1.20"
   },
   "devDependencies": {
     "babel-core": "^6.4.0",
@@ -33,6 +31,7 @@
     "chai": "^2.1.2",
     "gulp": "^3.8.11",
     "htmlparser": "^1.7.7",
+    "isomorphic-fetch": "^2.2.0",
     "jsdom": ">=4.0.2",
     "mocha": "^2.2.1",
     "mocha-loader": "^0.7.1",

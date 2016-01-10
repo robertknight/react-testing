@@ -38,15 +38,14 @@ make test
    are popular, polished and well documented.
  * [Webpack](http://webpack.github.io/) is used to package the tests for running/debugging in the
    browser.
- * [jsdom](https://github.com/tmpvar/jsdom) is used for testing of rendering DOM components outside of the browser. Version 4.x is used which requires iojs.
+ * [jsdom](https://github.com/tmpvar/jsdom) is used for testing of rendering DOM components outside of the browser.
  * The [Flummox](https://github.com/acdlite/flummox) implementation of the Flux architecture
    is used for fetching data and updating views in response.
    [Flummox](https://github.com/acdlite/flummox) avoidance of singletons makes it
    easy to inject fake/mock actions in unit and integration tests.
  * [Rewire](https://github.com/jhnns/rewire) is used to show one approach to mocking out
    React components in tests.
- * [fetch](https://github.com/whatwg/fetch) and [node-fetch](https://github.com/bitinn/node-fetch) provide a uniform API
-   for fetching data in the browser and Node
+ * [isomorphic-fetch](https://github.com/matthew-andrews/isomorphic-fetch) provides a uniform API for fetching data in the browser and Node.
 
 ## Recommended Reading & Videos
  * [Awesome React - Testing React Tutorials](https://github.com/enaqx/awesome-react#testing-react-tutorials) - Awesome React is a great collection
