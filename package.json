@@ -38,8 +38,8 @@
     "mocha-loader": "^0.7.1",
     "null-loader": "^0.1.1",
     "react-addons-test-utils": "^0.14.6",
-    "rewire": "^2.3.1",
-    "rewire-webpack": "^1.0.0",
+    "rewire": "^2.5.1",
+    "rewire-webpack": "^1.0.1",
     "rx": "^2.4.3",
     "webpack": "^1.7.3",
     "webpack-dev-server": "^1.7.0"

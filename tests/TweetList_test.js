@@ -1,12 +1,13 @@
 import React, {Component} from 'react';
 import {findDOMNode, render} from 'react-dom';
 import {createRenderer, scryRenderedComponentsWithType, renderIntoDocument} from 'react-addons-test-utils';
-import rewire from 'rewire';
 import {expect} from 'chai';
 
 import * as utils from './utils';
 
 import TweetItem from '../src/TweetItem';
+
+var rewire = require('rewire');
 
 const TEST_TWEETS = [{
   id: 'tweet-1',

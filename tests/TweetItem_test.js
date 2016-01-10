@@ -2,11 +2,17 @@ import React from 'react';
 import {renderIntoDocument} from 'react-addons-test-utils';
 
 import {expect} from 'chai';
-import rewire from 'rewire';
 
 import setup from './setup';
 
 import TweetItem from '../src/TweetItem';
+
+// CommonJS syntax is used for importing rewire for compatibility
+// with babel-loader.
+//
+// See https://github.com/jhnns/rewire-webpack/issues/12#issuecomment-95797024
+// for an explanation
+var rewire = require('rewire');
 
 const TEST_TWEET = {
   id: 'tweet-1',
