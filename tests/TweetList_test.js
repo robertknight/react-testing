@@ -102,18 +102,19 @@ describe('TweetList', () => {
 
     it('should select tweet on click (shallow rendering)', () => {
       const shallowRenderer = createRenderer();
-      const renderList = () => {
-        shallowRenderer.render(<TweetList tweets={TEST_TWEETS}/>);
+      shallowRenderer.render(<TweetList tweets={TEST_TWEETS}/>);
+
+      const getRenderedItems = () => {
         const list = shallowRenderer.getRenderOutput();
         return list.props.children.filter(component => component.type == TweetItem);
       }
-      let items = renderList();
+      let items = getRenderedItems();
 
       expect(items.length).to.equal(TEST_TWEETS.length);
       expect(items[0].props.isSelected).to.equal(false);
       items[0].props.onClick();
 
-      items = renderList();
+      items = getRenderedItems();
       expect(items[0].props.isSelected).to.equal(true);
     });
   });
