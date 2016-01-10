@@ -8,43 +8,43 @@ import TweetListContainer from './TweetListContainer';
 import TweetStore from './TweetStore';
 
 class AppFlux extends Flux {
-	constructor() {
-		super();
+  constructor() {
+    super();
 
-		this.createActions('tweets', FeedActions);
-		this.createStore('tweets', TweetStore, this);
-	}
+    this.createActions('tweets', FeedActions);
+    this.createStore('tweets', TweetStore, this);
+  }
 
-	fetchInitialData() {
-		this.getActions('tweets').fetchTimeline();
-	}
+  fetchInitialData() {
+    this.getActions('tweets').fetchTimeline();
+  }
 }
 
 class App extends Component {
-	constructor(props) {
-		super(props);
+  constructor(props) {
+    super(props);
 
-		this.state = {
-			selectedTweet: null
-		};
-	}
+    this.state = {
+      selectedTweet: null
+    };
+  }
 
-	render() {
-		return <div className="app">
-			<div className="app-center-column">
-				<StatusView flux={this.props.flux} />
-				<TweetListContainer flux={this.props.flux} onSelect={tweet =>
-					this.setState({selectedTweet: tweet})
-				}/>
-			</div>
-		</div>
-	}
+  render() {
+    return <div className="app">
+      <div className="app-center-column">
+        <StatusView flux={this.props.flux} />
+        <TweetListContainer flux={this.props.flux} onSelect={tweet =>
+          this.setState({selectedTweet: tweet})
+        }/>
+      </div>
+    </div>
+  }
 }
 
 var flux = new AppFlux();
 flux.fetchInitialData();
 flux.addListener('dispatch', action => {
-	console.log('dispatching', action.actionId);
+  console.log('dispatching', action.actionId);
 });
 
 var content = document.getElementById('app');

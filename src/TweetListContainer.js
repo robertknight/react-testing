@@ -7,39 +7,39 @@ import TweetStore from './TweetStore';
  * for that component.
  */
 export default class TweetListContainer extends Component {
-	constructor(props) {
-		super(props);
+  constructor(props) {
+    super(props);
 
-		this.tweetStore = props.flux.getStore('tweets');
-		this.state = {
-			tweets: this.tweetStore.getTweets()
-		};
-	}
+    this.tweetStore = props.flux.getStore('tweets');
+    this.state = {
+      tweets: this.tweetStore.getTweets()
+    };
+  }
 
-	componentDidMount() {
-		// in a typical app using flummox, the FluxComponent wrapper
-		// which ships with the library would be used instead of manually
-		// setting up a store change listener, subscribing to updates
-		// and removing the listener on unmount.
-		//
-		// It is done here for exposition
-		this.feedUpdateListener = () => {
-			this.getTweets();
-		};
-		this.tweetStore.addListener('change', this.feedUpdateListener);
-	}
+  componentDidMount() {
+    // in a typical app using flummox, the FluxComponent wrapper
+    // which ships with the library would be used instead of manually
+    // setting up a store change listener, subscribing to updates
+    // and removing the listener on unmount.
+    //
+    // It is done here for exposition
+    this.feedUpdateListener = () => {
+      this.getTweets();
+    };
+    this.tweetStore.addListener('change', this.feedUpdateListener);
+  }
 
-	componentWillUnmount() {
-		this.tweetStore.removeListener('change', this.feedUpdateListener);
-	}
+  componentWillUnmount() {
+    this.tweetStore.removeListener('change', this.feedUpdateListener);
+  }
 
-	getTweets() {
-		this.setState({tweets: this.tweetStore.getTweets()});
-	}
+  getTweets() {
+    this.setState({tweets: this.tweetStore.getTweets()});
+  }
 
-	render() {
-		return <TweetList tweets={this.state.tweets} onSelect={tweet =>
-			this.setState({selectedTweet: tweet})
-		}/>
-	}
+  render() {
+    return <TweetList tweets={this.state.tweets} onSelect={tweet =>
+      this.setState({selectedTweet: tweet})
+    }/>
+  }
 }

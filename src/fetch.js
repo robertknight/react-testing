@@ -2,9 +2,9 @@
 // for the fetch() API
 
 if (process.browser) {
-	require('whatwg-fetch');
-	module.exports = self.fetch;
+  require('whatwg-fetch');
+  module.exports = self.fetch;
 } else {
-	module.exports = require('node-fetch');
+  module.exports = require('node-fetch');
 }
 
