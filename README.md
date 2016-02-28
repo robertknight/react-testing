@@ -34,6 +34,8 @@ make test
 ## Libraries and Tools Used
  * React (obviously). v0.13 is used for [shallow-rendering support](http://facebook.github.io/react/docs/test-utils.html#shallow-rendering) which enables
    testing of rendering of a single level of the component tree in isolation.
+   _Update (28/02/16): Shallow rendering support has since improved in React v0.14.7 to
+   include some support for stateful components_
  * [Mocha](http://mochajs.org/) and chai are the basic testing frameworks used, these were chosen as they
    are popular, polished and well documented.
  * [Webpack](http://webpack.github.io/) is used to package the tests for running/debugging in the
@@ -42,9 +44,14 @@ make test
  * The [Flummox](https://github.com/acdlite/flummox) implementation of the Flux architecture
    is used for fetching data and updating views in response.
    [Flummox](https://github.com/acdlite/flummox) avoidance of singletons makes it
-   easy to inject fake/mock actions in unit and integration tests.
+   easy to inject fake/mock actions in unit and integration tests. _Update (28/02/16): Flummox still works perfectly well,
+   but [Redux](https://github.com/reactjs/redux) has since become the de-facto choice for state management in the
+   React community and it has an even better testability story._
  * [Rewire](https://github.com/jhnns/rewire) is used to show one approach to mocking out
-   React components in tests.
+   React components in tests. _Update (28/02/16): I would probably recommend looking at
+   [inject-loader](https://www.npmjs.com/package/inject-loader) for Webpack
+   or [Proxyquire](https://github.com/thlorenz/proxyquire) for Browserify instead as these provide
+   a cleaner way to mock JS modules in my view_.
  * [isomorphic-fetch](https://github.com/matthew-andrews/isomorphic-fetch) provides a uniform API for fetching data in the browser and Node.
 
 ## Recommended Reading & Videos
