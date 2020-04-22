@@ -1,6 +1,6 @@
 # OBSOLETE ADVICE WARNING
 
-This talk was given a long time ago. Tools and best practices have evolved since then. For more up-to-date information, have a look at:
+_(Update on 2020-04-22)_: This talk was given a long time ago. Tools and best practices have evolved since then. For more up-to-date information, have a look at:
 
 - The [Testing Overview](https://reactjs.org/docs/testing.html) section in the official React docs
 - A [blog post](https://robertknight.me.uk/posts/shallow-rendering-revisited/) I wrote about unit-testing React or Preact components
